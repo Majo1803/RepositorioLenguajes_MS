@@ -1,74 +1,50 @@
-﻿module Ejer5
+﻿module RutaCorta
+
+open System
 open System.Collections.Generic
 
-type Grafo = Dictionary<int, List<int>>
+// Definición del grafo para el laberinto
+let grafoLaberinto = [
+    ("0", ["1"; "3"]);
+    ("1", ["0"; "2"]);
+    ("2", ["1"; "3"]);
+    ("3", ["0"; "2"; "4"]);
+    ("4", ["3"; "5"]);
+    ("5", ["4"; "6"]);
+    ("6", ["5"])
+]
 
-let laberintoAGrafo laberinto =
-    let numRows = Array2D.length1 laberinto
-    let numCols = Array2D.length2 laberinto
-    let grafo = Dictionary()
+// Función para generar vecinos
+let vecinos nodo grafo =
+    match List.tryFind (fun (n, _) -> n = nodo) grafo with
+    | Some (_, neighbors) -> neighbors
+    | None -> []
 
-    let nodoId x y = x * numCols + y
+// Función principal de búsqueda en profundidad
+let rec prof2 ini fin grafo =
+    let rec prof_aux ruta grafo =
+        match ruta with
+        | [] -> []
+        | current::rest ->
+            if List.head current = fin then
+                List.rev current
+            else
+                let vecinosDeNodo = vecinos (List.head current) grafo
+                let nuevasRutas = List.map (fun vecino -> vecino::current) vecinosDeNodo
+                let rutasFiltradas = List.filter (fun ruta -> not (List.contains fin ruta)) nuevasRutas
+                prof_aux (rest @ rutasFiltradas) grafo
+    prof_aux [[ini]] grafo
 
-    let rec esSeguro x y =
-        x >= 0 && x < numRows && y >= 0 && y < numCols && laberinto.[x, y] <> 1
+// Función para imprimir la ruta
+let imprimirRuta ruta =
+    printfn "Ruta encontrada:"
+    ruta |> List.iter (printf "%s -> ")
+    printfn "Fin"
 
-    for x = 0 to numRows - 1 do
-        for y = 0 to numCols - 1 do
-            if esSeguro x y then
-                let nodo = nodoId x y
-                let vecinos =
-                    [ (x - 1, y); (x + 1, y); (x, y - 1); (x, y + 1) ]
-                    |> List.filter (fun (nx, ny) -> esSeguro nx ny)
-                    |> List.map (fun (nx, ny) -> nodoId nx ny)
-                grafo.Add(nodo, vecinos)
-    grafo
-
-let bfs grafo inicio destino =
-    let cola = Queue()
-    let visitado = HashSet()
-
-    let rec bfsAux nodo camino =
-        if nodo = destino then
-            camino
-        else
-            match grafo.TryGetValue(nodo) with
-            | true, vecinos ->
-                vecinos
-                |> List.filter (fun vecino -> not (visitado.Contains(vecino)))
-                |> List.iter (fun vecino ->
-                    visitado.Add(vecino)
-                    cola.Enqueue((vecino, camino @ [vecino]))
-                )
-                if cola.Count > 0 then
-                    let (nuevoNodo, nuevoCamino) = cola.Dequeue()
-                    bfsAux nuevoNodo nuevoCamino
-                else
-                    []
-            | _ -> []
-
-    if grafo.ContainsKey(inicio) then
-        visitado.Add(inicio)
-        cola.Enqueue((inicio, [inicio]))
-        bfsAux inicio [inicio]
-    else
-        []
-
-// Ejemplo de uso:
-let laberinto =
-    [| [| 0; 2; 0; 0; 1 |]
-       [| 0; 3; 0; 1; 0 |]
-       [| 0; 1; 0; 1; 2 |]
-       [| 0; 2; 0; 0; 0 |]
-       [| 0; 0; 0; 1; 0 |] |]
-
-let grafo = laberintoAGrafo laberinto
-let inicio = 0
-let destino = 24
-
-let rutaMasCorta = bfs grafo inicio destino
-
-if List.isEmpty rutaMasCorta then
-    printfn "No se encontró una ruta."
-else
-    printfn "Ruta más corta encontrada: %A" rutaMasCorta
+[<EntryPoint>]
+let main argv =
+    let rutaMasCorta = prof2 "0" "6" grafoLaberinto
+    match rutaMasCorta with
+    | [] -> printfn "No se encontró una ruta."
+    | _ -> imprimirRuta rutaMasCorta
+    0 // Salir del programa
