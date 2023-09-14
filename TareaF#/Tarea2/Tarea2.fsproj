@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <RootNamespace>Tarea2</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Ejer1.fs" />
+        <Compile Include="Ejer2.fs" />
+        <Compile Include="Ejer3.fs" />
+        <Compile Include="Ejer5.fs" />
+    </ItemGroup>
+
+</Project>
