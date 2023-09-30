@@ -1,0 +1,4 @@
+subconj([], _).  % Un conjunto vacío es subconjunto de cualquier conjunto.
+subconj([X|S1], S) :- member(X, S), subconj(S1, S).
+
+
